@@ -24,4 +24,27 @@ describe('effect', () => {
         expect(foo).toBe(12)
         expect(r).toBe('foo')
     })
+
+    it('scheduler', () => {
+        // 调度执行，由用户决定副作用函数的执行时机 & 执行次数
+        let dummy
+        let run: any
+        const scheduler = jest.fn(() => {
+            run = runner
+        })
+        const obj = reactive({foo: 1})
+        const runner = effect(() => {
+            dummy = obj.foo
+        }, { scheduler })
+        expect(scheduler).not.toHaveBeenCalled()
+        expect(dummy).toBe(1)
+        // update
+        obj.foo++
+        expect(scheduler).toHaveBeenCalledTimes(1)
+        expect(dummy).toBe(1)
+
+        run()
+        expect(dummy).toBe(2)
+
+    })
 })
