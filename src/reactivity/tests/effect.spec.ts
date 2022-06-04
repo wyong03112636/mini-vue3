@@ -1,4 +1,4 @@
-import { effect } from '../effect'
+import { effect, stop } from '../effect'
 import { reactive } from '../reactive'
 describe('effect', () => {
     it('happy path', () => {
@@ -46,5 +46,37 @@ describe('effect', () => {
         run()
         expect(dummy).toBe(2)
 
+    })
+
+    it('stop', () => {
+        // 本质是收集依赖时，把对应的effect实例删除
+        let dummy
+        const obj = reactive({foo: 1})
+        const runner = effect(() => {
+            dummy = obj.foo
+        })
+
+        obj.foo = 2
+        expect(dummy).toBe(2)
+        stop(runner)
+        obj.foo = 3
+
+        expect(dummy).toBe(2)
+        runner()
+        expect(dummy).toBe(3)
+    })
+
+    it('onStop', () => {
+        let dummy
+        const obj = reactive({foo: 1})
+        const onStop = jest.fn()
+        const runner = effect(() => {
+            dummy = obj.foo
+        }, {
+            onStop
+        })
+        stop(runner)
+
+        expect(onStop).toBeCalledTimes(1)
     })
 })

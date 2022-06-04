@@ -1,6 +1,10 @@
+import { extend } from '../shared'
 class ReactiveEffect {
     private _fn: any
-    constructor(fn, public schedular) {
+    deps = []
+    active = true // stop方法加锁
+    onStop?: () => void 
+    constructor(fn, public schedular?) {
         this._fn = fn
     }
 
@@ -8,14 +12,41 @@ class ReactiveEffect {
         activeFn = this
         return this._fn()
     }
+
+    stop() {
+        if (this.active) {
+            cleanupEffect(this)
+            if (this.onStop) {
+                this.onStop()
+            }
+            this.active = false
+        }
+    }
+}
+
+const cleanupEffect = (effect) => {
+    effect.deps.forEach((dep: any) => {
+        dep.delete(effect)
+    })
 }
 
 let activeFn
 export const effect = (fn, options: any = {}) => {
     const effect = new ReactiveEffect(fn, options.scheduler)
     effect.run()
-    return effect.run.bind(effect)
+    // options
+    extend(effect, options)
+
+    const runner: any = effect.run.bind(effect)
+    runner.effect = effect
+
+    return runner
 }
+
+export const stop = (runner) => {
+    runner.effect.stop()
+}
+
 
 const targetMap = new WeakMap()
 // 依赖收集
@@ -32,9 +63,9 @@ export const track = (target, key) => {
      depSet = new Set()
      keyMap.set(key, depSet)
  }
-
+ if (!activeFn) return
  depSet.add(activeFn)
-
+ activeFn.deps.push(depSet)
 }
 
 // 触发依赖
