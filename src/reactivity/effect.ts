@@ -1,18 +1,27 @@
 import { extend } from '../shared'
+let activeFn; // 当前effect实例
+let shouldTrack // 是否应该依赖收集
 class ReactiveEffect {
     private _fn: any
-    deps = []
+    deps = [] // Array<Set>
     active = true // stop方法加锁
-    onStop?: () => void 
+    onStop?: () => void // 调用stop方法后的回调
     constructor(fn, public schedular?) {
         this._fn = fn
     }
 
     run() {
+        if (!this.active) {
+            // 说明调用过stop方法
+            return this._fn()
+        }
+        shouldTrack = true
         activeFn = this
-        return this._fn()
+        const result = this._fn() // 执行this._fn会触发 依赖收集track函数执行
+        shouldTrack = false
+        return result
     }
-
+    // 停止触发副作用函数
     stop() {
         if (this.active) {
             cleanupEffect(this)
@@ -28,9 +37,9 @@ const cleanupEffect = (effect) => {
     effect.deps.forEach((dep: any) => {
         dep.delete(effect)
     })
+    effect.deps.length = 0
 }
 
-let activeFn
 export const effect = (fn, options: any = {}) => {
     const effect = new ReactiveEffect(fn, options.scheduler)
     effect.run()
@@ -51,21 +60,30 @@ export const stop = (runner) => {
 const targetMap = new WeakMap()
 // 依赖收集
 export const track = (target, key) => {
- // target => key => dep
- let keyMap = targetMap.get(target)
- if (!keyMap) {
-     keyMap = new Map()
-     targetMap.set(target, keyMap)
- }
+    if (!isTracking()) return
 
- let depSet = keyMap.get(key)
- if (!depSet) {
-     depSet = new Set()
-     keyMap.set(key, depSet)
- }
- if (!activeFn) return
- depSet.add(activeFn)
- activeFn.deps.push(depSet)
+    // target => key => dep
+    let keyMap = targetMap.get(target)
+    if (!keyMap) {
+        keyMap = new Map()
+        targetMap.set(target, keyMap)
+    }
+
+    let depSet = keyMap.get(key)
+    if (!depSet) {
+        depSet = new Set()
+        keyMap.set(key, depSet)
+    }
+
+    if (depSet.has(activeFn)) return
+
+    depSet.add(activeFn)
+    activeFn.deps.push(depSet)
+}
+
+// 是否可以收集依赖
+const isTracking = () => {
+    return shouldTrack && activeFn !== undefined
 }
 
 // 触发依赖
