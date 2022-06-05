@@ -72,7 +72,7 @@ export const track = (target, key) => {
 export const trigger = (target, key) => {
     const depsMap = targetMap.get(target)
     const deps = depsMap.get(key)
-    deps.forEach(dep => {
+    deps.forEach(dep => { // dep  为 effect实例
         if (dep.schedular) {
             dep.schedular()
         } else {
