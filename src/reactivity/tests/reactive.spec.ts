@@ -8,4 +8,11 @@ describe('reactive', () => {
         expect(origin).not.toBe(observed)
         expect(observed.foo).toBe(1)
     })
+
+    test('nested reactive', () => {
+        const origin = {foo: 1, master: {a: 1}, arr: [{b: 2}]}
+        const observed = reactive(origin)
+        expect(isReactive(observed.master)).toBe(true)
+        expect(isReactive(observed.arr)).toBe(true)
+    })
 })
