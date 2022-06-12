@@ -12,10 +12,10 @@ class ReactiveEffect {
 
     run() {
         if (!this.active) {
-            // 说明调用过stop方法
-            return this._fn()
+            // 说明调用过stop方法 执行fn函数 触发依赖收集 此时的shouldTrack为false 就不会触发依赖收集
+            return this._fn() 
         }
-        shouldTrack = true
+        shouldTrack = true 
         activeFn = this
         const result = this._fn() // 执行this._fn会触发 依赖收集track函数执行
         shouldTrack = false

@@ -1,5 +1,5 @@
 
-import { mutableHandlers, readonlyHandlers } from './baseHandlers'
+import { mutableHandlers, readonlyHandlers, shallowReadonlyHandlers } from './baseHandlers'
 
 export enum ReactiveFlag {
     Is_Reactive = '__v_isReactive',
@@ -16,6 +16,10 @@ export const reactive = (raw) => {
 
 export const readonly = (raw) => {
     return creteObjectActive(raw, readonlyHandlers)
+}
+
+export const shallowReadonly = (raw) => {
+    return creteObjectActive(raw, shallowReadonlyHandlers)
 }
 
 export const isReactive = (value) => {
