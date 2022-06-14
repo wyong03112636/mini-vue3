@@ -75,14 +75,18 @@ export const track = (target, key) => {
         keyMap.set(key, depSet)
     }
 
-    if (depSet.has(activeFn)) return
+    trackEffects(depSet)
+    
+}
 
+export const trackEffects = (depSet) => {
+    if (depSet.has(activeFn)) return
     depSet.add(activeFn)
     activeFn.deps.push(depSet)
 }
 
 // 是否可以收集依赖
-const isTracking = () => {
+export const isTracking = () => {
     return shouldTrack && activeFn !== undefined
 }
 
@@ -90,6 +94,10 @@ const isTracking = () => {
 export const trigger = (target, key) => {
     const depsMap = targetMap.get(target)
     const deps = depsMap.get(key)
+    triggerEffects(deps)
+}
+
+export const triggerEffects = (deps) => {
     deps.forEach(dep => { // dep  为 effect实例
         if (dep.schedular) {
             dep.schedular()
@@ -98,4 +106,3 @@ export const trigger = (target, key) => {
         }
     });
 }
-
