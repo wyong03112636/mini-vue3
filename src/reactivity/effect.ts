@@ -1,7 +1,7 @@
 import { extend } from '../shared'
 let activeFn; // 当前effect实例
 let shouldTrack // 是否应该依赖收集
-class ReactiveEffect {
+export class ReactiveEffect {
     private _fn: any
     deps = [] // Array<Set>
     active = true // stop方法加锁
