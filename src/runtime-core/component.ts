@@ -35,8 +35,7 @@ function handleSetupResult(instance, setupResult: any) {
 
 function finishComponentSetup(instance: any) {
    const component = instance.type
-   if (!component.render) {
-    // 有错误
+   if (component.render) {
         instance.render = component.render
    }
 }

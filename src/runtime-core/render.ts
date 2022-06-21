@@ -6,6 +6,7 @@ export function render(vnode, container) {
 }
 
 function path(vnode, container) {
+    console.log(vnode)
     // 处理组件
     processComponent(vnode, container)
 }
