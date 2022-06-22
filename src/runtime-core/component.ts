@@ -9,7 +9,6 @@ export function createComponentInstance(vnode) {
 export function setupComponent(instance) {
     // todo
     // initProps()
-
     setupStatefulComponent(instance)
 }
  // 处理组件状态
