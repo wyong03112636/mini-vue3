@@ -20,17 +20,21 @@ function processComponent(vnode, container) {
     mountComponent(vnode, container)
 }
 
-function mountComponent(vnode, container) {
+function mountComponent(initialVNode, container) {
     // 创建组件实例
-    const instance = createComponentInstance(vnode)
+    const instance = createComponentInstance(initialVNode)
     setupComponent(instance)
 
-    setupRenderEffect(instance, container)
+    setupRenderEffect(instance, initialVNode, container)
 }
-function setupRenderEffect(instance: any, container) {
-    const subTree = instance.render()
-
+// 组件状态处理完之后，处理render函数返回
+function setupRenderEffect(instance: any, initialVNode, container) {
+    const { proxy } = instance
+    // subTree是一个vnode虚拟节点
+    const subTree = instance.render.call(proxy)
     path(subTree, container)
+    // 执行完path之后 会把组件上的el挂载到subTree上， 此时的vnode为组件的vnode
+    initialVNode.el = subTree.el
 }
 
 function processElement(vnode: any, container: any) {
@@ -39,6 +43,7 @@ function processElement(vnode: any, container: any) {
 
 function mountElement(vnode: any, container: any) {
    const el =  document.createElement(vnode.type)
+   vnode.el = el
     const { children, props } = vnode
 
     for (const key in props) {
