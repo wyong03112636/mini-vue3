@@ -42,6 +42,8 @@ function processElement(vnode: any, container: any) {
     mountElement(vnode, container) 
 }
 
+const isOn = (key: string) => /^on[A-Z]/.test(key)
+
 function mountElement(vnode: any, container: any) {
    const el =  document.createElement(vnode.type)
    vnode.el = el
@@ -50,7 +52,13 @@ function mountElement(vnode: any, container: any) {
     for (const key in props) {
         if (Object.prototype.hasOwnProperty.call(props, key)) {
             const val = props[key];
-            el.setAttribute(key, val)
+            if (isOn(key)) {
+                const event = key.slice(2).toLowerCase()
+                el.addEventListener(event, val)
+            } else {
+                el.setAttribute(key, val)
+            }
+
         }
     }
     if (shapFlag & ShapFlags.TEXT_CHILDREN) {
