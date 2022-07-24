@@ -28,7 +28,9 @@ function setupStatefulComponent(instance: any) {
     instance.proxy = new Proxy({_: instance}, publicInstanceProxyHandlers)
     const { setup } = component
     if (setup) {
+        setCurrentInstance(instance)
         const setupResult = setup(shallowReadonly(instance.props), { emit: instance.emit})
+        setCurrentInstance(null)
         handleSetupResult(instance, setupResult)
     }
     
@@ -49,3 +51,12 @@ function finishComponentSetup(instance: any) {
    }
 }
 
+let currentInstance = null;
+export const getCurrentInstance = () => {
+    return currentInstance
+}
+
+// 封装为一个函数后续方便调试，只需要在函数内部打一个断点就可以
+const setCurrentInstance = (instance) => {
+    currentInstance = instance
+}
